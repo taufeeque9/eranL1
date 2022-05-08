@@ -48,7 +48,8 @@ from pprint import pprint
 # if config.domain=='gpupoly' or config.domain=='refinegpupoly':
 from refine_gpupoly import *
 from utils import parse_vnn_lib_prop, translate_output_constraints, translate_input_to_box, negate_cstr_or_list_old
-
+from create_input_box_tf import load_png_img, img_to_input_box
+from termcolor import colored
 #ZONOTOPE_EXTENSION = '.zt'
 EPS = 10**(-9)
 
@@ -76,6 +77,25 @@ def isnetworkfile(fname):
 
 
 def parse_input_box(text):
+    # for single image, create a file with interval for each neuron in different lines len(intervals) should not exceed 1
+    intervals_list = []
+    for line in text.split('\n'):
+        if line!="":
+            interval_strings = re.findall("\[-?\d*\.?\d+, *-?\d*\.?\d+\]", line)
+            intervals = []
+            for interval in interval_strings:
+                interval = interval.replace('[', '')
+                interval = interval.replace(']', '')
+                [lb,ub] = interval.split(",")
+                intervals.append((np.double(lb), np.double(ub)))
+            intervals_list.append(intervals)
+
+    # return every combination
+    boxes = itertools.product(*intervals_list)
+    return list(boxes)
+
+def my_parse_input_box(text):
+    # for single image, create a file with interval for each neuron in different lines len(intervals) should not exceed 1
     intervals_list = []
     for line in text.split('\n'):
         if line!="":
@@ -127,7 +147,7 @@ def normalize(image, means, stds, dataset):
             tmp[count] = (image[count] - means[2])/stds[2]
             count = count + 1
 
-        
+
         is_gpupoly = (domain=='gpupoly' or domain=='refinegpupoly')
         if is_conv and not is_gpupoly:
             for i in range(3072):
@@ -334,6 +354,7 @@ def init_domain(d):
     else:
         return d
 
+
 parser = argparse.ArgumentParser(description='ERAN Example',  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--netname', type=isnetworkfile, default=config.netname, help='the network name, the extension can be only .pb, .pyt, .tf, .meta, and .onnx')
 parser.add_argument('--epsilon', type=float, default=config.epsilon, help='the epsilon for L_infinity perturbation')
@@ -344,7 +365,7 @@ parser.add_argument('--epsfile', type=str, default=config.epsfile, help='file sp
 parser.add_argument('--vnn_lib_spec', type=str, default=config.vnn_lib_spec, help='VNN_LIB spec file, defining input and output constraints')
 parser.add_argument('--specnumber', type=int, default=config.specnumber, help='the property number for the acasxu networks')
 parser.add_argument('--domain', type=str, default=config.domain, help='the domain name can be either deepzono, refinezono, deeppoly, refinepoly, gpupoly, refinegpupoly')
-parser.add_argument('--dataset', type=str, default=config.dataset, help='the dataset, can be either mnist, cifar10, acasxu, or fashion')
+parser.add_argument('--dataset', type=str, default=config.dataset, help='the dataset, can be either mnist, l1mnist, cifar10, acasxu, or fashion')
 parser.add_argument('--complete', type=str2bool, default=config.complete,  help='flag specifying where to use complete verification or not')
 parser.add_argument('--timeout_lp', type=float, default=config.timeout_lp,  help='timeout for the LP solver')
 parser.add_argument('--timeout_final_lp', type=float, default=config.timeout_final_lp,  help='timeout for the final LP solver')
@@ -386,11 +407,29 @@ parser.add_argument("--approx_k", type=str2bool, default=config.approx_k, help="
 # Logging options
 parser.add_argument('--logdir', type=str, default=None, help='Location to save logs to. If not specified, logs are not saved and emitted to stdout')
 parser.add_argument('--logname', type=str, default=None, help='Directory of log files in `logdir`, if not specified timestamp is used')
+parser.add_argument('--image', type=int, default=-1, help='Image idx')
 
 
 args = parser.parse_args()
+
+#############################################################################################################################
+if args.dataset in ['mnist', 'l1mnist']:
+    if args.image != -1:
+        args.output_constraints = f'constraints/{args.dataset}_{args.image}.txt'
+        args.input_box = f'input_boxes/{args.image}.txt'
+        img = load_png_img(f'images/{args.image}.png')
+        img_to_input_box(img, float(args.epsilon), f'input_boxes/{args.image}.txt')
+        if args.dataset == 'l1mnist':
+            img_label = np.loadtxt('images/labels.txt')
+            with open(f'constraints/l1mnist_{args.image}.txt', 'w') as cf:
+                cf.write('11\n')
+                cf.write(f'y{int(img_label[args.image])+1} l1norm_and_max_label {args.epsilon}\n')
+#############################################################################################################################
+
 for k, v in vars(args).items():
     setattr(config, k, v)
+
+
 # if args.timeout_complete is not None:
 #     raise DeprecationWarning("'--timeout_complete' is depreciated. Use '--timeout_final_milp' instead")
 config.json = vars(args)
@@ -436,7 +475,7 @@ elif not config.geometric:
 dataset = config.dataset
 
 if zonotope_bool==False:
-   assert dataset in ['mnist', 'cifar10', 'acasxu', 'fashion'], "only mnist, cifar10, acasxu, and fashion datasets are supported"
+   assert dataset in ['l1mnist', 'mnist', 'cifar10', 'acasxu', 'fashion'], "only mnist, cifar10, acasxu, and fashion datasets are supported"
 
 mean = 0
 std = 0
@@ -479,6 +518,8 @@ else:
         num_pixels = len(zonotope)
     elif(dataset=='mnist'):
         num_pixels = 784
+    elif(dataset=='l1mnist'):
+        num_pixels = 784*2
     elif (dataset=='cifar10'):
         num_pixels = 3072
     elif(dataset=='acasxu'):
@@ -495,12 +536,15 @@ else:
         operations, resources = translator.translate()
         optimizer = Optimizer(operations, resources)
         nn = layers()
-        network, relu_layers, num_gpu_layers = optimizer.get_gpupoly(nn) 
-    else:    
+        network, relu_layers, num_gpu_layers = optimizer.get_gpupoly(nn)
+    else:
         eran = ERAN(model, is_onnx=is_onnx)
 
 if not is_trained_with_pytorch:
     if dataset == 'mnist' and not config.geometric:
+        means = [0]
+        stds = [1]
+    elif dataset == 'l1mnist' and not config.geometric:
         means = [0]
         stds = [1]
     elif dataset == 'acasxu':
@@ -533,9 +577,12 @@ if config.vnn_lib_spec is not None:
     boxes = translate_input_to_box(C_lb, C_ub, x_0=None, eps=None, domain_bounds=None)
 else:
     if config.output_constraints:
+        print(f'getting constraints from file {config.output_constraints}')
         constraints = get_constraints_from_file(config.output_constraints)
+        print(constraints)
     else:
         constraints = None
+    sys.stdout.flush()
 
     if dataset and config.input_box is None:
         tests = get_tests(dataset, config.geometric)
@@ -944,7 +991,7 @@ elif config.geometric:
 
             normalize(spec_lb, means, stds, config.dataset)
             normalize(spec_ub, means, stds, config.dataset)
-            
+
             label, nn, nlb, nub, _, _ = eran.analyze_box(spec_lb, spec_ub, 'deeppoly', config.timeout_lp, config.timeout_milp,
                                                    config.use_default_heuristic)
             print('Label: ', label)
@@ -1130,6 +1177,7 @@ elif config.geometric:
     print('Average time: ', tot_time / total)
 
 elif config.input_box is not None:
+    # boxes = parse_input_box(tests)
     boxes = parse_input_box(tests)
     index = 1
     correct = 0
@@ -1138,12 +1186,16 @@ elif config.input_box is not None:
         specUB = [interval[1] for interval in box]
         normalize(specLB, means, stds, dataset)
         normalize(specUB, means, stds, dataset)
-        hold, nn, nlb, nub, _, _ = eran.analyze_box(specLB, specUB, domain, config.timeout_lp, config.timeout_milp, config.use_default_heuristic, constraints)
+        hold, nn, nlb, nub, _, _ = eran.analyze_box(specLB, specUB, domain, config.timeout_lp, config.timeout_milp, config.use_default_heuristic, constraints, complete=args.complete)
         if hold:
-            print('constraints hold for box ' + str(index) + ' out of ' + str(sum([1 for b in boxes])))
+            print(colored('constraints hold for box ' + str(index) + ' out of ' + str(sum([1 for b in boxes])), 'green'))
+            with open('results.txt', 'a') as rf:
+                rf.write('1\n')
             correct += 1
         else:
-            print('constraints do NOT hold for box ' + str(index) + ' out of ' + str(sum([1 for b in boxes])))
+            print(colored('constraints do NOT hold for box ' + str(index) + ' out of ' + str(sum([1 for b in boxes])), 'red'))
+            with open('results.txt', 'a') as rf:
+                rf.write('0\n')
 
         index += 1
 
@@ -1171,13 +1223,13 @@ elif config.spatial:
 
         specLB = image.clone().permute(0, 2, 3, 1).flatten().cpu()
         specUB = image.clone().permute(0, 2, 3, 1).flatten().cpu()
-        
+
         normalize(specLB, means, stds, dataset)
         normalize(specUB, means, stds, dataset)
 
         predicted_label, nn, nlb, nub, _, _ = eran.analyze_box(
-            specLB=specLB, specUB=specUB, domain=init_domain(domain), 
-            timeout_lp=config.timeout_lp, timeout_milp=config.timeout_milp, 
+            specLB=specLB, specUB=specUB, domain=init_domain(domain),
+            timeout_lp=config.timeout_lp, timeout_milp=config.timeout_milp,
             use_default_heuristic=config.use_default_heuristic
         )
 
@@ -1267,8 +1319,8 @@ elif config.spatial:
                 deeppoly_spatial_constraints[key] = val.cpu()
 
             milp_spatial_constraints = {
-                'delta': config.delta, 'gamma': config.gamma, 
-                'channels': image.shape[1], 'lower_planes': lower_planes, 
+                'delta': config.delta, 'gamma': config.gamma,
+                'channels': image.shape[1], 'lower_planes': lower_planes,
                 'upper_planes': upper_planes,
                 'add_norm_constraints': transformer.add_norm_constraints,
                 'neighboring_indices': transformer.flow_constraint_pairs
@@ -1307,7 +1359,7 @@ elif config.spatial:
             timeout_lp=config.timeout_lp, timeout_milp=config.timeout_milp,
             use_default_heuristic=config.use_default_heuristic,
             label=label, lexpr_weights=lexpr_weights, lexpr_cst=lexpr_cst,
-            lexpr_dim=lexpr_dim, uexpr_weights=uexpr_weights, 
+            lexpr_dim=lexpr_dim, uexpr_weights=uexpr_weights,
             uexpr_cst=uexpr_cst, uexpr_dim=uexpr_dim, expr_size=expr_size,
             spatial_constraints=deeppoly_spatial_constraints
         )
@@ -1350,15 +1402,15 @@ else:
         targetfile = open(config.target, 'r')
         targets = csv.reader(targetfile, delimiter=',')
         for i, val in enumerate(targets):
-            target = val   
-   
-   
+            target = val
+
+
     if config.epsfile != None:
         epsfile = open(config.epsfile, 'r')
         epsilons = csv.reader(epsfile, delimiter=',')
         for i, val in enumerate(epsilons):
-            eps_array = val  
-            
+            eps_array = val
+
     for i, test in enumerate(tests):
         if config.from_test and i < config.from_test:
             continue
@@ -1372,7 +1424,7 @@ else:
             specLB = np.round(specLB/config.quant_step)
             specUB = np.round(specUB/config.quant_step)
         #cifarfile = open('/home/gagandeepsi/eevbnn/input.txt', 'r')
-        
+
         #cifarimages = csv.reader(cifarfile, delimiter=',')
         #for _, image in enumerate(cifarimages):
         #    specLB = np.float64(image)
@@ -1401,7 +1453,7 @@ else:
         #            print('True')
         if config.epsfile!= None:
             epsilon = np.float64(eps_array[i])
-        
+
         #if(label == int(test[0])):
         if is_correctly_classified == True:
             label = int(test[0])
@@ -1438,17 +1490,17 @@ else:
                     diffMatrix = np.delete(-np.eye(num_outputs), int(test[0]), 0)
                     diffMatrix[:, label] = 1
                     diffMatrix = diffMatrix.astype(np.float64)
-                    
+
                     # gets the values from GPUPoly.
                     res = network.evalAffineExpr(diffMatrix, back_substitute=network.BACKSUBSTITUTION_WHILE_CONTAINS_ZERO)
-                    
-                    
+
+
                     labels_to_be_verified = []
                     var = 0
                     nn.specLB = specLB
                     nn.specUB = specUB
                     nn.predecessors = []
-                    
+
                     for pred in range(0, nn.numlayer+1):
                         predecessor = np.zeros(1, dtype=np.int)
                         predecessor[0] = int(pred-1)
@@ -1548,7 +1600,7 @@ else:
                             else:
                                 print("img", i, "Failed with MILP")
                     else:
-                    
+
                         if x != None:
                             cex_label,_,_,_,_,_ = eran.analyze_box(x,x,'deepzono',config.timeout_lp, config.timeout_milp, config.use_default_heuristic, approx_k=config.approx_k)
                             print("cex label ", cex_label, "label ", label)

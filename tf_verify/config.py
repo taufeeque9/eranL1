@@ -32,7 +32,7 @@ class config:
     zonotope = None # file to specify the zonotope matrix
     domain = None # the domain name can be either deepzono, refinezono, deeppoly or refinepoly
     dataset = None # the dataset, can be either mnist, cifar10, or acasxu
-    complete = False # flag specifying where to use complete verification or not
+    complete = True # flag specifying where to use complete verification or not
     timeout_lp = 1 # timeout for the LP solver
     timeout_milp = 1 # timeout for the MILP solver
     timeout_final_lp = 100
@@ -43,11 +43,14 @@ class config:
     use_default_heuristic = True # whether to use the area heuristic for the DeepPoly ReLU approximation or to always create new noise symbols per relu for the DeepZono ReLU approximation
     mean = None # the mean used to normalize the data with
     std = None # the standard deviation used to normalize the data with
+
+    # mean = [0.1307] # the mean used to normalize the data with
+    # std = [0.3081] # the standard deviation used to normalize the data with
     num_tests = None # Number of images to test
     from_test = 0 # From which number to start testing
     debug = False # Whether to display debug info
     subset = None
-    target = None # 
+    target = None #
     epsfile = None
     vnn_lib_spec = None # Use inputs and constraints defined in a file respecting the vnn_lib standard
 
@@ -73,7 +76,10 @@ class config:
 
     # arbitrary input / output
     input_box = None # input box file to use
+    # input_box = 'input_boxes/img_2.txt'
     output_constraints = None # output constraints file to check
+    # output_constraints = 'l1mnist_constraint.txt'
+    # output_constraints = 'only_mnist_constraint.txt'
 
     # GPU options
     device = Device.CPU # Which device Deeppoly should run on
@@ -84,4 +90,3 @@ class config:
     delta = 0.3
     gamma = float('inf')
     quant_step = None
-

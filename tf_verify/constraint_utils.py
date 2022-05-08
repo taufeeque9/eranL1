@@ -18,6 +18,7 @@
 # constraints are in conjunctive normal form (CNF)
 
 import re
+import sys
 
 def clean_string(string):
     return string.replace('\n', '')
@@ -45,6 +46,8 @@ def get_constraints_from_file(file):
 
     num_labels = int(lines[0])
     for index in range(1, len(lines)):
+        if lines[index][0] == '#':
+            continue
         elements = re.split(' +', lines[index])
         i = 0
         labels = []  # OR
@@ -54,6 +57,30 @@ def get_constraints_from_file(file):
 
         constraint = clean_string(elements[i])
         i += 1
+
+        if constraint == 'l1net_and_max_label': # assume y0 contains norm
+            assert len(labels) == 1
+            assert labels[0] != 0
+
+            for other in range(1, num_labels):
+                if other not in labels:
+                    and_list.append([(label, other, 0) for label in labels])
+
+
+        if constraint == 'l1norm_and_max_label': # assume y0 contains norm
+            assert len(labels) == 1
+            assert labels[0] != 0
+
+            for other in range(1, num_labels):
+                if other not in labels:
+                    and_list.append([(0, -1, float(elements[i]))] + [(label, other, 0) for label in labels])
+
+            # print('#########################################################################################\n')
+            # for or_list in and_list:
+            #     print(or_list)
+            #     print('\n')
+            # print('#########################################################################################')
+
 
         if constraint == 'min':
             for other in range(num_labels):

@@ -1,0 +1,4 @@
+11
+#yi l1norm_and_max_label norm_threshold
+#y2 l1norm_and_max_label 0.1
+y1 max
