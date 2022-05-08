@@ -1,9 +1,18 @@
 ERAN <img width="100" alt="portfolio_view" align="right" src="http://safeai.ethz.ch/img/sri-logo.svg">
 ========
+CS781 Project:
+------------
+### Instructions to run:<br>
+To find the smallest epsilon for which the constraints do NOT hold (using L1 and Linf norm), run:<br>
+`python3 tipping_point.py --image [idx]`<br>
+[idx] is an integer from 0 to 99 which picks the image images/[idx].png<br>
+
+To find the percentage of images on which the constraints hold (using L1 and Linf norm), run:<br>
+`python3 eval.py --n 100 --epsilon {eps}`<br>
 
 ![High Level](https://raw.githubusercontent.com/eth-sri/eran/master/overview.png)
 
-ETH Robustness Analyzer for Neural Networks (ERAN) is a state-of-the-art sound, precise, scalable, and extensible analyzer based on [abstract interpretation](https://en.wikipedia.org/wiki/Abstract_interpretation) for the complete and incomplete verification of MNIST, CIFAR10, and ACAS Xu based networks. ERAN produces state-of-the-art precision and performance for both complete and incomplete verification and can be tuned to provide best precision and scalability (see recommended configuration settings at the bottom). ERAN is developed at the [SRI Lab, Department of Computer Science, ETH Zurich](https://www.sri.inf.ethz.ch/) as part of the [Safe AI project](http://safeai.ethz.ch/). The goal of ERAN is to automatically verify safety properties of neural networks with feedforward, convolutional, and residual layers against input perturbations (e.g.,  L∞-norm attacks, geometric transformations, vector field deformations, etc). 
+ETH Robustness Analyzer for Neural Networks (ERAN) is a state-of-the-art sound, precise, scalable, and extensible analyzer based on [abstract interpretation](https://en.wikipedia.org/wiki/Abstract_interpretation) for the complete and incomplete verification of MNIST, CIFAR10, and ACAS Xu based networks. ERAN produces state-of-the-art precision and performance for both complete and incomplete verification and can be tuned to provide best precision and scalability (see recommended configuration settings at the bottom). ERAN is developed at the [SRI Lab, Department of Computer Science, ETH Zurich](https://www.sri.inf.ethz.ch/) as part of the [Safe AI project](http://safeai.ethz.ch/). The goal of ERAN is to automatically verify safety properties of neural networks with feedforward, convolutional, and residual layers against input perturbations (e.g.,  L∞-norm attacks, geometric transformations, vector field deformations, etc).
 
 ERAN combines abstract domains with custom multi-neuron relaxations from PRIMA to support fully-connected, convolutional, and residual networks with ReLU, Sigmoid, Tanh, and Maxpool activations. ERAN is sound under floating point arithmetic with the exception of the (MI)LP solver used in RefineZono and RefinePoly. The employed abstract domains are specifically designed for the setting of neural networks and aim to balance scalability and precision. Specifically, ERAN supports the following analysis:
 
@@ -13,22 +22,22 @@ ERAN combines abstract domains with custom multi-neuron relaxations from PRIMA t
 
 * GPUPoly [MLSys'2021]: leverages an efficient GPU implementation to scale DeepPoly to much larger networks.
 
-* RefineZono [ICLR'19]: combines DeepZ analysis with MILP and LP solvers for more precision. 
+* RefineZono [ICLR'19]: combines DeepZ analysis with MILP and LP solvers for more precision.
 
 * RefinePoly/RefineGPUPoly [NeurIPS'19]: combines DeepPoly/GPUPoly analysis with (MI)LP refinement and PRIMA framework [arXiv'2021] to compute group-wise joint neuron abstractions for state-of-the-art precision and scalability.
 
-All analysis are implemented using the [ELINA](http://elina.ethz.ch/) library for numerical abstractions. More details can be found in the publications below. 
+All analysis are implemented using the [ELINA](http://elina.ethz.ch/) library for numerical abstractions. More details can be found in the publications below.
 
 ERAN vs AI2
 --------------------
-Note that ERAN subsumes the first abstract interpretation based analyzer [AI2](https://www.sri.inf.ethz.ch/publications/gehr2018ai), so if you aim to compare, please use ERAN as a baseline. 
+Note that ERAN subsumes the first abstract interpretation based analyzer [AI2](https://www.sri.inf.ethz.ch/publications/gehr2018ai), so if you aim to compare, please use ERAN as a baseline.
 
 
 USER MANUAL
 --------------------
 For a detailed desciption of the options provided and the implentation of ERAN, you can download the [user manual](https://files.sri.inf.ethz.ch/eran/docs/eran_manual.pdf).
 
-Requirements 
+Requirements
 ------------
 GNU C compiler, ELINA, Gurobi's Python interface,
 
@@ -195,7 +204,7 @@ pip3 install -r requirements.txt
 
 ERAN may not be compatible with older versions of tensorflow (we have tested ERAN with versions >= 1.11.0), so if you have an older version and want to keep it, then we recommend using the python virtual environment for installing tensorflow.
 
-If gurobipy is not found despite executing `python setup.py install` in the corresponding gurobi directory, 
+If gurobipy is not found despite executing `python setup.py install` in the corresponding gurobi directory,
 gurobipy can alternatively be installed using conda with:
 ```
 conda config --add channels http://conda.anaconda.org/gurobi
@@ -241,13 +250,13 @@ python3 . --netname <path to the network file> --epsilon <float between 0 and 1>
 
 * ```<specnumber>```: the property number for the ACASXu networks
 
-* Refinezono and RefinePoly refines the analysis results from the DeepZ and DeepPoly domain respectively using the approach in our ICLR'19 paper. The optional parameters timeout_lp and timeout_milp (default is 1 sec for both) specify the timeouts for the LP and MILP forumlations of the network respectively. 
+* Refinezono and RefinePoly refines the analysis results from the DeepZ and DeepPoly domain respectively using the approach in our ICLR'19 paper. The optional parameters timeout_lp and timeout_milp (default is 1 sec for both) specify the timeouts for the LP and MILP forumlations of the network respectively.
 
-* Since Refinezono and RefinePoly uses timeout for the gurobi solver, the results will vary depending on the processor speeds. 
+* Since Refinezono and RefinePoly uses timeout for the gurobi solver, the results will vary depending on the processor speeds.
 
-* Setting the parameter "complete" (default is False) to True will enable MILP based complete verification using the bounds provided by the specified domain. 
+* Setting the parameter "complete" (default is False) to True will enable MILP based complete verification using the bounds provided by the specified domain.
 
-* When ERAN fails to prove the robustness of a given network in a specified region, it searches for an adversarial example and prints an adversarial image within the specified adversarial region along with the misclassified label and the correct label. ERAN does so for both complete and incomplete verification. 
+* When ERAN fails to prove the robustness of a given network in a specified region, it searches for an adversarial example and prints an adversarial image within the specified adversarial region along with the misclassified label and the correct label. ERAN does so for both complete and incomplete verification.
 
 
 
@@ -261,22 +270,22 @@ python3 . --netname ../nets/onnx/mnist/convBig__DiffAI.onnx --epsilon 0.1 --doma
 
 will evaluate the local robustness of the MNIST convolutional network (upto 35K neurons) with ReLU activation trained using DiffAI on the 100 MNIST test images. In the above setting, epsilon=0.1 and the domain used by our analyzer is the deepzono domain. Our analyzer will print the following:
 
-* 'Verified safe' for an image when it can prove the robustness of the network 
+* 'Verified safe' for an image when it can prove the robustness of the network
 
 * 'Verified unsafe' for an image for which it can provide a concrete adversarial example
 
-* 'Failed' when it cannot. 
+* 'Failed' when it cannot.
 
 * It will also print an error message when the network misclassifies an image.
 
 * the timing in seconds.
 
 * The ratio of images on which the network is robust versus the number of images on which it classifies correctly.
- 
+
 
 Zonotope Specification
 ```
-python3 . --netname ../nets/onnx/mnist/convBig__DiffAI.onnx --zonotope some_path/zonotope_example.txt --domain deepzono 
+python3 . --netname ../nets/onnx/mnist/convBig__DiffAI.onnx --zonotope some_path/zonotope_example.txt --domain deepzono
 ```
 
 will check if the Zonotope specification specified in "zonotope_example" holds for the network and will output "Verified safe", "Verified unsafe" or "Failed" along with the timing.
@@ -288,7 +297,7 @@ ACASXu Specification
 ```
 python3 . --netname ../data/acasxu/nets/ACASXU_run2a_3_3_batch_2000.onnx --dataset acasxu --domain deepzono  --specnumber 9
 ```
-will run DeepZ for analyzing property 9 of ACASXu benchmarks. The ACASXU networks are in data/acasxu/nets directory and the one chosen for a given property is defined in the Reluplex paper. 
+will run DeepZ for analyzing property 9 of ACASXu benchmarks. The ACASXU networks are in data/acasxu/nets directory and the one chosen for a given property is defined in the Reluplex paper.
 
 Geometric analysis
 
@@ -313,14 +322,14 @@ Recommended Configuration for More Precise but relatively expensive Incomplete V
 ----------------------------------------------------------------------------------------------
 Use the "refinepoly" or if a gpu is available "refinegpupoly" domain with , "--sparse_n 100", and "--timeout_final_lp 100".\
 For MLPs use "--refine_neurons", "--use_milp True", "--timeout_milp 10", "--timeout_lp 10" to do a neuronweise bound refinement.\
-For Conv networks use "--partial_milp {1,2}" (choose at most number of linear layers), "--max_milp_neurons 100", and "--timeout_final_milp 250" to use a MILP encoding for the last layers. 
+For Conv networks use "--partial_milp {1,2}" (choose at most number of linear layers), "--max_milp_neurons 100", and "--timeout_final_milp 250" to use a MILP encoding for the last layers.
 
 Examples:\
 To certify e.g. [CNN-B-ADV](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/CNN_B_CIFAR_ADV.onnx) introduced as a benchmark for SDP-FO in [[1]](https://arxiv.org/abs/2010.11645) on the [100 random samples](https://files.sri.inf.ethz.ch/eran/data/cifar10_test_b_adv.csv) from [[2]](https://arxiv.org/abs/2103.06624) against L-inf perturbations of magnitude 2/255 use:
 ```
 python3 . --netname ../nets/CNN_B_CIFAR_ADV.onnx --dataset cifar10  --subset b_adv --domain refinegpupoly --epsilon 0.00784313725 --sparse_n 100 --partial_milp 1 --max_milp_neurons 250 --timeout_final_milp 500 --mean 0.49137255 0.48235294 0.44666667 --std 0.24705882 0.24352941 0.26156863
 ```
-to certify 43 of the 100 samples as correct with an average runtime of around 260s per sample (including timed out attempts). 
+to certify 43 of the 100 samples as correct with an average runtime of around 260s per sample (including timed out attempts).
 
 Recommended Configuration for Faster but relatively imprecise Incomplete Verification
 -----------------------------------------------------------------------------------------------
@@ -348,52 +357,52 @@ Publications
 *  [PRIMA: Precise and General Neural Network Certification via Multi-Neuron Convex Relaxations](https://www.sri.inf.ethz.ch/publications/mueller2021precise)
 
    Mark Niklas Müller, Gleb Makarchuk, Gagandeep Singh, Markus Püschel, Martin Vechev
-   
+
    POPL 2022.
-   
+
 *  [Scaling Polyhedral Neural Network Verification on GPUs](https://www.sri.inf.ethz.ch/publications/mller2021neural)
 
    Christoph Müller, Francois Serre, Gagandeep Singh, Markus Puschel, Martin Vechev
-   
+
    MLSys 2021.
-   
+
 *  [Efficient Certification of Spatial Robustness](https://arxiv.org/abs/2009.09318)
 
    Anian Ruoss, Maximilian Baader, Mislav Balunovic, Martin Vechev
-   
+
    AAAI 2021.
 
 
 *  [Certifying Geometric Robustness of Neural Networks](https://www.sri.inf.ethz.ch/publications/balunovic2019geometric)
 
    Mislav Balunovic,  Maximilian Baader, Gagandeep Singh, Timon Gehr,  Martin Vechev
-   
+
    NeurIPS 2019.
 
 
 *  [Beyond the Single Neuron Convex Barrier for Neural Network Certification](https://www.sri.inf.ethz.ch/publications/singh2019krelu).
-    
-    Gagandeep Singh, Rupanshu Ganvir, Markus Püschel, and Martin Vechev. 
-   
+
+    Gagandeep Singh, Rupanshu Ganvir, Markus Püschel, and Martin Vechev.
+
     NeurIPS 2019.
 
 *  [Boosting Robustness Certification of Neural Networks](https://www.sri.inf.ethz.ch/publications/singh2019refinement).
 
-    Gagandeep Singh, Timon Gehr, Markus Püschel, and Martin Vechev. 
+    Gagandeep Singh, Timon Gehr, Markus Püschel, and Martin Vechev.
 
     ICLR 2019.
 
 
 *  [An Abstract Domain for Certifying Neural Networks](https://www.sri.inf.ethz.ch/publications/singh2019domain).
 
-    Gagandeep Singh, Timon Gehr, Markus Püschel, and Martin Vechev. 
+    Gagandeep Singh, Timon Gehr, Markus Püschel, and Martin Vechev.
 
     POPL 2019.
 
 
-*  [Fast and Effective Robustness Certification](https://www.sri.inf.ethz.ch/publications/singh2018effective). 
+*  [Fast and Effective Robustness Certification](https://www.sri.inf.ethz.ch/publications/singh2018effective).
 
-    Gagandeep Singh, Timon Gehr, Matthew Mirman, Markus Püschel, and Martin Vechev. 
+    Gagandeep Singh, Timon Gehr, Matthew Mirman, Markus Püschel, and Martin Vechev.
 
     NeurIPS 2018.
 
@@ -432,10 +441,10 @@ We report the (maximum) number of activation layers (including MaxPool) of any p
 |         | ConvMed | convolutional | 5,704 | 3   | ReLU | PGD &epsilon;=0.1 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGRELU__PGDK_w_0.1_6_500.onnx) |
 |         | ConvMed | convolutional | 5,704 | 3   | ReLU | PGD &epsilon;=0.3 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGRELU__PGDK_w_0.3_6_500.onnx) |
 |         | ConvMed | convolutional | 5,704 | 3   | Sigmoid | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGSIGMOID__Point.onnx) |
-|         | ConvMed | convolutional | 5,704 | 3   | Sigmoid | PGD &epsilon;=0.1 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGSIGMOID__PGDK_w_0.1_6_500.onnx) | 
-|         | ConvMed | convolutional | 5,704 | 3   | Sigmoid | PGD &epsilon;=0.3 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGSIGMOID__PGDK_w_0.3_6_500.onnx) | 
+|         | ConvMed | convolutional | 5,704 | 3   | Sigmoid | PGD &epsilon;=0.1 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGSIGMOID__PGDK_w_0.1_6_500.onnx) |
+|         | ConvMed | convolutional | 5,704 | 3   | Sigmoid | PGD &epsilon;=0.3 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGSIGMOID__PGDK_w_0.3_6_500.onnx) |
 |         | ConvMed | convolutional | 5,704 | 3   | Tanh | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGTANH__Point.onnx) |
-|         | ConvMed | convolutional | 5,704 | 3   | Tanh | PGD &epsilon;=0.1 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGTANH__PGDK_w_0.1_6_500.onnx) | 
+|         | ConvMed | convolutional | 5,704 | 3   | Tanh | PGD &epsilon;=0.1 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGTANH__PGDK_w_0.1_6_500.onnx) |
 |         | ConvMed | convolutional | 5,704 | 3   |  Tanh | PGD &epsilon;=0.3 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convMedGTANH__PGDK_w_0.3_6_500.onnx) |
 |         | ConvMaxpool | convolutional | 13,798 | 9 | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/mnist_conv_maxpool.onnx)|
 |         | ConvBig | convolutional | 48,064 | 6  | ReLU | DiffAI | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/mnist/convBigRELU__DiffAI.onnx) |
@@ -446,29 +455,29 @@ We report the (maximum) number of activation layers (including MaxPool) of any p
 |         | 9x200 | fully connected | 1,810 | 10 | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/cifar_relu_9_200.onnx) |
 |         | 6x500 | fully connected | 3,000 | 6   | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnRELU__Point_6_500.onnx)|
 |         | 6x500 | fully connected | 3,000 | 6   | ReLU | PGD &epsilon;=0.0078 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnRELU__PGDK_w_0.0078_6_500.onnx)|
-|         | 6x500 | fully connected | 3,000 | 6   | ReLU | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnRELU__PGDK_w_0.0313_6_500.onnx)| 
+|         | 6x500 | fully connected | 3,000 | 6   | ReLU | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnRELU__PGDK_w_0.0313_6_500.onnx)|
 |         | 6x500 | fully connected | 3,000 | 6   | Sigmoid | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnSIGMOID__Point_6_500.onnx)|
 |         | 6x500 | fully connected | 3,000 | 6   | Sigmoid | PGD &epsilon;=0.0078 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnSIGMOID__PGDK_w_0.0078_6_500.onnx)|
-|         | 6x500 | fully connected | 3,000 | 6   | Sigmoid | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnSIGMOID__PGDK_w_0.0313_6_500.onnx)| 
+|         | 6x500 | fully connected | 3,000 | 6   | Sigmoid | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnSIGMOID__PGDK_w_0.0313_6_500.onnx)|
 |         | 6x500 | fully connected | 3,000 | 6   | Tanh | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnTANH__Point_6_500.onnx)|
 |         | 6x500 | fully connected | 3,000 | 6   | Tanh | PGD &epsilon;=0.0078 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnTANH__PGDK_w_0.0078_6_500.onnx)|
-|         | 6x500 | fully connected | 3,000 | 6   | Tanh | PGD &epsilon;=0.0313 |  [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnTANH__PGDK_w_0.0313_6_500.onnx)| 
+|         | 6x500 | fully connected | 3,000 | 6   | Tanh | PGD &epsilon;=0.0313 |  [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ffnnTANH__PGDK_w_0.0313_6_500.onnx)|
 |         | 7x1024 | fully connected | 6,144 | 6 | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/cifar_relu_7_1024.onnx) |
 |         | ConvSmall | convolutional | 4,852 | 3 | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convSmallRELU__Point.onnx)|
 |         | ConvSmall   | convolutional  | 4,852 | 3  | ReLU  | PGD | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convSmallRELU__PGDK.onnx)|
 |         | ConvSmall  | convolutional | 4,852 | 3  | ReLU | DiffAI | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convSmallRELU__DiffAI.onnx)|
 |         | ConvMed | convolutional | 7,144 | 3 | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGRELU__Point.onnx) |
 |         | ConvMed | convolutional | 7,144 | 3   | ReLU | PGD &epsilon;=0.0078 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGRELU__PGDK_w_0.0078.onnx) |
-|         | ConvMed | convolutional | 7,144 | 3   | ReLU | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGRELU__PGDK_w_0.0313.onnx) | 
+|         | ConvMed | convolutional | 7,144 | 3   | ReLU | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGRELU__PGDK_w_0.0313.onnx) |
 |         | ConvMed | convolutional | 7,144 | 3   | Sigmoid | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGSIGMOID__Point.onnx) |
 |         | ConvMed | convolutional | 7,144 | 3   | Sigmoid | PGD &epsilon;=0.0078 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGSIGMOID__PGDK_w_0.0078.onnx) |
-|         | ConvMed | convolutional | 7,144 | 3   | Sigmoid | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGSIGMOID__PGDK_w_0.0313.onnx) | 
+|         | ConvMed | convolutional | 7,144 | 3   | Sigmoid | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGSIGMOID__PGDK_w_0.0313.onnx) |
 |         | ConvMed | convolutional | 7,144 | 3   | Tanh | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGTANH__Point.onnx) |
 |         | ConvMed | convolutional | 7,144 | 3   | Tanh | PGD &epsilon;=0.0078 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGTANH__PGDK_w_0.0078.onnx) |
 |         | ConvMed | convolutional | 7,144 | 3   | Tanh | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convMedGTANH__PGDK_w_0.0313.onnx) |  
 |         | ConvMaxpool | convolutional | 53,938 | 9 | ReLU | None | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/cifar_conv_maxpool.onnx)|
-|         | ConvBig | convolutional | 62,464 | 6 | ReLU | DiffAI | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convBigRELU__DiffAI.onnx) | 
-|         | ResNetTiny | Residual | 311K | 12 | ReLU | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ResNetTiny_PGD.onnx) | 
+|         | ConvBig | convolutional | 62,464 | 6 | ReLU | DiffAI | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/convBigRELU__DiffAI.onnx) |
+|         | ResNetTiny | Residual | 311K | 12 | ReLU | PGD &epsilon;=0.0313 | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ResNetTiny_PGD.onnx) |
 |         | ResNetTiny | Residual | 311K | 12 | ReLU | DiffAI | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ResNetTiny_DiffAI.onnx) |
 |         | ResNet18 | Residual | 558K | 19 | ReLU | PGD | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ResNet18_PGD.onnx) |
 |         | ResNet18 | Residual | 558K | 19 | ReLU | DiffAI | [:arrow_down:](https://files.sri.inf.ethz.ch/eran/nets/onnx/cifar/ResNet18_DiffAI.onnx) |
@@ -483,7 +492,7 @@ We ran our experiments for the feedforward networks on a 3.3 GHz 10 core Intel i
 
 ![High Level](https://files.sri.inf.ethz.ch/eran/plots/mnist_6_100.png)
 
-In the following, we compare the precision and performance of DeepZ and DeepPoly on a subset of the neural networks listed above in multi-threaded mode. In can be seen that DeepPoly is overall more precise than DeepZ but it is slower than DeepZ on the convolutional networks. 
+In the following, we compare the precision and performance of DeepZ and DeepPoly on a subset of the neural networks listed above in multi-threaded mode. In can be seen that DeepPoly is overall more precise than DeepZ but it is slower than DeepZ on the convolutional networks.
 
 ![High Level](https://files.sri.inf.ethz.ch/eran/plots/mnist_6_500.png)
 
@@ -494,7 +503,7 @@ In the following, we compare the precision and performance of DeepZ and DeepPoly
 ![High Level](https://files.sri.inf.ethz.ch/eran/plots/cifar10_convsmall.png)
 
 
-The table below compares the performance and precision of DeepZ and DeepPoly on our large networks trained with DiffAI. 
+The table below compares the performance and precision of DeepZ and DeepPoly on our large networks trained with DiffAI.
 
 
 <table aligh="center">
@@ -511,7 +520,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> </td>
    <td> DeepZ </td>
    <td> DeepPoly </td>
-   <td> DeepZ </td> 
+   <td> DeepZ </td>
    <td> DeepPoly </td>
   </tr>
 
@@ -521,7 +530,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.1</td>
    <td> 97 </td>
    <td> 97 </td>
-   <td> 5 </td> 
+   <td> 5 </td>
    <td> 50 </td>
 </tr>
 
@@ -532,7 +541,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.2</td>
    <td> 79 </td>
    <td> 78 </td>  
-   <td> 7 </td> 
+   <td> 7 </td>
    <td> 61 </td>
 </tr>
 
@@ -542,7 +551,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.3</td>
    <td> 37 </td>
    <td> 43 </td>
-   <td> 17 </td> 
+   <td> 17 </td>
    <td> 88 </td>
 </tr>
 
@@ -552,7 +561,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.1</td>
    <td> 97 </td>
    <td> 97 </td>
-   <td> 133 </td> 
+   <td> 133 </td>
    <td> 400 </td>
 </tr>
 
@@ -562,7 +571,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.1</td>
    <td> 95 </td>
    <td> N/A </td>
-   <td> 29 </td> 
+   <td> 29 </td>
    <td> N/A </td>
 </tr>
 
@@ -572,7 +581,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.006</td>
    <td> 50 </td>
    <td> 52 </td>
-   <td> 39 </td> 
+   <td> 39 </td>
    <td> 322 </td>
 </tr>
 
@@ -583,7 +592,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
    <td> 0.008</td>
    <td> 33 </td>
    <td> 40 </td>
-   <td> 46 </td> 
+   <td> 46 </td>
    <td> 331 </td>
 </tr>
 
@@ -591,7 +600,7 @@ The table below compares the performance and precision of DeepZ and DeepPoly on 
 </table>
 
 
-The table below compares the timings of complete verification with ERAN for all ACASXu benchmarks. 
+The table below compares the timings of complete verification with ERAN for all ACASXu benchmarks.
 
 
 <table aligh="center">
@@ -600,7 +609,7 @@ The table below compares the timings of complete verification with ERAN for all 
     <td>Networks</td>
     <td colspan="1">% Average Runtime (s)</td>
   </tr>
-  
+
   <tr>
    <td> 1</td>
    <td> all 45</td>
@@ -618,7 +627,7 @@ The table below compares the timings of complete verification with ERAN for all 
    <td> all 45</td>
    <td> 1.9 </td>
   </tr>
-  
+
 <tr>
    <td> 4</td>
    <td> all 45</td>
@@ -636,7 +645,7 @@ The table below compares the timings of complete verification with ERAN for all 
    <td> 1_1</td>
    <td> 10 </td>
   </tr>
-  
+
 <tr>
    <td> 7</td>
    <td> 1_9</td>
@@ -654,7 +663,7 @@ The table below compares the timings of complete verification with ERAN for all 
    <td> 3_3</td>
    <td> 9 </td>
   </tr>
-  
+
 <tr>
    <td> 10</td>
    <td> 4_5</td>
@@ -665,7 +674,7 @@ The table below compares the timings of complete verification with ERAN for all 
 
 <table>
 
-The table below shows the certification performance of PRIMA (refinepoly with Precise Multi-Neuron Relacations). For MLPs we use CPU only certificaiton, while we use GPUPoly for the certification of the convolutional networks. 
+The table below shows the certification performance of PRIMA (refinepoly with Precise Multi-Neuron Relacations). For MLPs we use CPU only certificaiton, while we use GPUPoly for the certification of the convolutional networks.
 
 
 <thead>
@@ -880,7 +889,7 @@ Contributors
 
 * [Mislav Balunovic](https://www.sri.inf.ethz.ch/people/mislav) (contact for geometric certification) - mislav.balunovic@inf.ethz.ch
 
-* Gleb Makarchuk (contact for FConv library) - hlebm@ethz.ch gleb.makarchuk@gmail.com 
+* Gleb Makarchuk (contact for FConv library) - hlebm@ethz.ch gleb.makarchuk@gmail.com
 
 * Anian Ruoss (contact for spatial certification) - anruoss@ethz.ch
 
@@ -888,7 +897,7 @@ Contributors
 
 * [Maximilian Baader](https://www.sri.inf.ethz.ch/people/max) - mbaader@inf.ethz.ch
 
-* [Dana Drachsler Cohen](https://www.sri.inf.ethz.ch/people/dana) - dana.drachsler@inf.ethz.ch 
+* [Dana Drachsler Cohen](https://www.sri.inf.ethz.ch/people/dana) - dana.drachsler@inf.ethz.ch
 
 * [Timon Gehr](https://www.sri.inf.ethz.ch/tg.php) - timon.gehr@inf.ethz.ch
 
